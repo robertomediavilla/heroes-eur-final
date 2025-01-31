@@ -1,0 +1,101 @@
+---
+title: "Quality checks"
+output: html_document
+author: Vicente Arrona
+date: "2024-12-13"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+These are the anonymised datasets by country and the complete dataset
+
+```{r import datasets}
+ds <- readRDS("data/data_complete.rds")
+ds_sp <- readRDS("data/data_Spain.rds")
+ds_cr <- readRDS("data/data_Czech_Republic.rds")
+ds_nl <- readRDS("data/data_Netherlands.rds")
+ds_it <- readRDS("data/data_Italy.rds")
+
+
+## Codebook for reference
+cb <- 
+  openxlsx::read.xlsx("ext/all_codebook.xlsx", sheet = 1)
+```
+
+Each contributor could use this script or create his/her own to run quality
+checks. Please make sure to use both code and text to provide as much
+information as possible an ensure replicability. Please also use the package
+todor to flag things to do (`todor::todo()`) or to fix (`todor::fixme()`).
+
+```{r req packs}
+library(tidyverse)
+library(ggpubr) # arranges ggplots
+library(visdat)
+library(naniar)
+library(knitr)
+library(gtsummary)
+library(skimr)
+library(kableExtra) #Saves tables made with kable
+library(patchwork) 
+library(scales)
+```
+
+We noticed that mp25d (First wave) had different response codifications for 0-3
+and 0-4, one is purely quantitative ("No, no problems", "Yes, one problem"...)
+and the other is quantitative in a temporal manner ("Not at all", "Less than
+once a month"...), that makes this NOT comparable (Check "heroes_codebook.xlsx"
+to validate this information).
+
+```{r remove mp25d}
+ds <- 
+  ds |> 
+  select(-mp25d) # Take out mp25d while keeping the rest.
+```
+
+On the other hand, mp25d_2and3 (2nd and 3rd waves) has 1 extra level for Spain
+data, what can be seen in the summary table is that level "0" is at 0%, while
+for the other countries (Except Italy) level "5" is at 0%. Checking the scripts,
+we realized that when recoding, Spain data took out the "0" value, and defined
+the levels 1-5, as for the others, these are defined 0-4. This means that the
+spanish dataset had a displacement of the data, resulting on being the only one
+with responses at level "5" and non at level "0", needing recoding.
+Unfortunately, Italy has no data for this variable, while it does have it for
+the previously deleted mp25d, making it difficult for analysis.
+
+```{r recoding mp25d_2and3 for spain}
+ds <- 
+  ds |>
+  mutate(mp25d_2and3 = as.numeric(as.character(mp25d_2and3))) |> # To number
+  mutate(mp25d_2and3 = case_when(
+    mp25d_2and3 == 1 & country_of_residence == "ES" ~ 0,    # Move levels
+    mp25d_2and3 == 2 & country_of_residence == "ES" ~ 1,
+    mp25d_2and3 == 3 & country_of_residence == "ES" ~ 2,
+    mp25d_2and3 == 4 & country_of_residence == "ES" ~ 3,
+    mp25d_2and3 == 5 & country_of_residence == "ES" ~ 4,
+    TRUE ~ mp25d_2and3)) |> 
+  mutate(mp25d_2and3 = factor(mp25d_2and3)) # To factor again
+
+# To be sure, check the values:
+levels(ds$mp25d_2and3)
+
+table(ds$mp25d_2and3, ds$country_of_residence) # Should maintain no. of obs.
+```
+
+The variable ra56 has 6 levels, with only Spain having data on the 6th one,
+"heroes_codebook" describes level "6" as "Not applicable" (It is not defined in
+"all_codebook"), we have to recode those answers to be NA values, as the other
+countries won't have information if we leave that level.
+
+```{r recode level 6 ra56 as NA}
+ds <- 
+  ds |>
+    mutate(ra56 = as.numeric(as.character(ra56))) |> # To number value. 
+    mutate(ra56 = case_when(
+    ra56 == 6 & country_of_residence == "ES" ~ NA,
+    TRUE ~ ra56)) |> 
+  mutate(ra56 = factor(ra56)) # To factor again
+```
