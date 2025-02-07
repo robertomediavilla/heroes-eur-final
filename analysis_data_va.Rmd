@@ -1,0 +1,129 @@
+---
+title: "Analysis code VA"
+output: html_document
+author: "Vicente Arrona"
+date: "05-02-2024" 
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+These are the anonymised datasets by country and the complete dataset
+
+```{r import datasets}
+ds <- readRDS("data/data_complete.rds")
+ds_sp <- readRDS("data/data_Spain.rds")
+ds_cr <- readRDS("data/data_Czech_Republic.rds")
+ds_nl <- readRDS("data/data_Netherlands.rds")
+ds_it <- readRDS("data/data_Italy.rds")
+
+
+## Codebook for reference
+cb <- 
+  openxlsx::read.xlsx("ext/all_codebook.xlsx", sheet = 1)
+```
+
+```{r req packs}
+library(tidyverse)
+library(ggpubr) # arranges ggplots
+library(visdat)
+library(naniar)
+library(knitr)
+library(gtsummary)
+library(skimr)
+library(kableExtra) #Saves tables made with kable
+library(patchwork) 
+library(scales)
+```
+
+### Questionnaire scores
+
+```{r questionnaire scores}
+# Create objects with cut-off scores per country
+
+phq_co_st <- c("CZ",
+               "IT",
+               "NL")
+
+phq_co_12 <- c("ES")
+
+gad_co_st <- c("CZ",
+               "IT",
+               "ES")
+
+gad_co_12 <- "NL"
+
+
+      if_all(ad34:ad45, ~ !is.na(.)) ~ "Complete GHQ"
+      if_all(pcptsd1:pcptsd5, ~ !is.na(.)) ~ "Complete PC-PTSD-5"
+      if_all(re57:re63, ~ !is.na(.)) ~ "Complete BRS"
+      if_all(tea47:tea49, ~ !is.na(.)) ~ "Complete Trauma questions"
+
+
+ds <- 
+  ds |> 
+  mutate(phq_sc = rowSums(
+    across(
+      contains("phq")), na.rm = TRUE),   # rowSums has to be the 1st verb
+    phq_co = case_when(
+      country_of_residence %in% phq_co_st & phq_sc >= 10 ~ "Yes",
+      country_of_residence %in% phq_co_12 & phq_sc >= 12 ~ "Yes",
+      TRUE ~ "No"),      
+    phq_cat = case_when(
+      phq_sc < 4 ~ "Minimal symptoms",
+      phq_sc >= 4 & phq_sc < 10 ~ "Mild symptoms",
+      phq_sc >= 10 & phq_sc < 14 ~ "Moderate symptoms",
+      phq_sc >= 14 & phq_sc < 20 ~ "Moderately severe symptoms", 
+      phq_sc >= 20 ~ "Severe symptoms"),
+    phq_cat = as.ordered(phq_cat)
+  )
+
+ds <- 
+  ds |> 
+  mutate(gad_sc = rowSums(
+    across(
+      contains("gad")), na.rm = TRUE),
+    gad_co = case_when(
+      country_of_residence %in% gad_co_st & gad_sc >= 10 ~ "Yes",
+      country_of_residence %in% gad_co_12 & gad_sc >= 12 ~ "Yes",
+      TRUE ~ "No"),
+    gad_cat = case_when(
+      gad_sc < 4 ~ "Minimal symptoms",
+      gad_sc >= 4 & gad_sc < 10 ~ "Mild symptoms",
+      gad_sc >= 10 & gad_sc < 14 ~ "Moderate symptoms",
+      gad_sc >= 14 & gad_sc < 20 ~ "Moderately severe symptoms", 
+      gad_sc >= 20 ~ "Severe symptoms"),
+    gad_cat = as.ordered(gad_cat)
+  )
+
+rm(gad_co_12, gad_co_st, phq_co_st)
+```
+
+### Healthcare worker density per 10,000 people.
+
+```{r hcw density}
+
+density_prof <- 
+  readxl::read_xlsx("ext/hcw_per_10k.xlsx") |>   # Data 
+  select(country, nurses_20, doctors_20) |> 
+  mutate(country = case_when(
+    country == "Czechia" ~ "CZ",
+    country == "Italy" ~ "IT",
+    country == "Netherlands" ~ "NL",
+    country == "Spain" ~ "ES",
+    TRUE ~ country)
+    )
+
+ds <- 
+  ds |> 
+  left_join(density_prof, 
+            by = c("country_of_residence" = "country")) # Join data 
+
+ds <- 
+  ds |>
+  mutate(nur_density_2020 = nurses_20,
+         doc_density_2020 = doctors_20)
+```

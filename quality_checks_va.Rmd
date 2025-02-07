@@ -1,7 +1,7 @@
 ---
 title: "Quality checks"
 output: html_document
-author: Vicente Arrona
+author: "Vicente Arrona"
 date: "2024-12-13"
 editor_options: 
   chunk_output_type: console
@@ -88,9 +88,10 @@ table(ds$mp25d_2and3, ds$country_of_residence) # Should maintain no. of obs.
 The variable ra56 has 6 levels, with only Spain having data on the 6th one,
 "heroes_codebook" describes level "6" as "Not applicable" (It is not defined in
 "all_codebook"), we have to recode those answers to be NA values, as the other
-countries won't have information if we leave that level.
+countries (Except IT, who doesn't have responses of this) already recoded this
+way.
 
-```{r recode level 6 ra56 as NA}
+```{r recode level 6 ra56 as NA for Spain}
 ds <- 
   ds |>
     mutate(ra56 = as.numeric(as.character(ra56))) |> # To number value. 
@@ -98,4 +99,536 @@ ds <-
     ra56 == 6 & country_of_residence == "ES" ~ NA,
     TRUE ~ ra56)) |> 
   mutate(ra56 = factor(ra56)) # To factor again
+```
+
+We want to look at missing data trends, by wave and country
+
+```{r missing data by wave}
+ds_w1 <- 
+  ds |> 
+  filter(wave == 1)
+
+ds_w2 <- 
+  ds |> 
+  filter(wave == 2)
+
+ds_w3 <- 
+  ds |> 
+  filter(wave == 3)
+
+# Czech Republic
+
+vis_miss(ds_w1 |> filter(country_of_residence == "CZ") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Czech R. (Individual variables)")
+ # 100% missing:  1 sd08new                     
+ #  2 sd08new_esp                 
+ #  3 sd09a                       
+ #  4 sd10a                       
+ #  5 gad1 - gad7                        
+ # 12 pcptsd1 - pcptsd5                     
+ # 17 is46b                       
+ # 18 is46aa                      
+ # 19 loneliness                  
+ # 20 tea47                       
+ # 21 ra56                        
+ # 22 ra57                        
+ # 23 ra58                        
+ # 24 ra59                        
+ # 25 tr17                        
+ # 26 mp18aa                      
+ # 27 mp18ab                      
+ # 28 mp25d_2and3                 
+ # 29 mp25ea                      
+ # 30 mp25fb                  
+
+vis_miss(ds_w1 |> filter(country_of_residence == "CZ") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Czech R. (Ecological variables)")
+
+# 100% missing: 1 NUTS1                                                      
+#  2 country_region_code                                                    
+#  3 country_region                          
+#  4 metro_area    
+#  5 census_fips_code
+#  6 jurisdiction             
+#  7 c5m_flag    
+#  8 c6m_flag    
+#  9 h7_flag     
+# 10 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary        
+# 11 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary      
+# 12 v2d_medically_clinically_vulnerable_non_elderly                        
+# 13 v2e_education                                                         
+# 14 v2f_frontline_workers_non_healthcare                                   
+# 15 v2g_frontline_workers_healthcare                                       
+# 16 v4_mandatory_vaccination_summary                                       
+
+vis_miss(ds_w2 |> filter(country_of_residence == "CZ") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 2): Czech R. (Individual variables)")
+
+# 100% missing:   1 age                        
+ #  2 sd08                       
+ #  3 sd08a                      
+ #  4 sd09                       
+ #  5 sd09a                      
+ #  6 sd10                       
+ #  7 sd10a                      
+ #  8 gad1 - gad7 (GAD-7)                    
+ # 15 pcptsd1 - pcptsd5 (PC-PTSD-5)                   
+ # 20 is46b                      
+ # 21 is46aa                     
+ # 22 tea47 - tea 49 (Trauma)                     
+ # 25 tr17                       
+ # 26 ep31                      
+
+vis_miss(ds_w2 |> filter(country_of_residence == "CZ") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 2): Czech R. (Ecological variables)")
+
+# 100% missing: 1 NUTS1                                                      
+ # 2 country_region_code                                              
+ # 3 country_region                                                             4 metro_area                                                                 5 census_fips_code                                                           6 jurisdiction                                                               7 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary      
+ # 8 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary   
+# 9 v4_mandatory_vaccination_summary                  
+# 10 majority_vaccinated                                                       
+vis_miss(ds_w3 |> filter(country_of_residence == "CZ") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 3): Czech R. (Individual variables)")
+
+# 100% missing:  1 age                         
+ #  2 sd08                        
+ #  3 sd08a                       
+ #  4 sd09                        
+ #  5 sd09a                       
+ #  6 sd10                        
+ #  7 sd10a                       
+ #  8 is46b                       
+ #  9 is46aa                      
+ # 10 tea47 - tea49 (Trauma)                      
+ # 13 re56                        
+ # 14 re56a                       
+ # 15 tr17                        
+ # 16 ep31                        
+ # 17 mp18ab                      
+ # 18 mp19                     
+
+vis_miss(ds_w3 |> filter(country_of_residence == "CZ") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 3): Czech R. (Ecological variables)")
+
+#100% missing:  1 NUTS1                                                      
+#  2 country_region_code                                            
+#  3 country_region
+#  4 metro_area    
+#  5 census_fips_code
+#  6 jurisdiction    
+#  7 c1m_flag        
+#  8 c2m_flag        
+#  9 c3m_flag        
+# 10 c4m_flag        
+# 11 c5m_flag        
+# 12 c6m_flag        
+# 13 c7m_flag        
+# 14 e1_flag         
+# 15 e3_fiscal_measures         
+# 16 e4_international_support
+# 17 h4_emergency_investment_in_healthcare
+# 18 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary      
+# 19 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary
+# 20 majority_vaccinated                                                     
+
+# Italy
+
+vis_miss(ds_w1 |> filter(country_of_residence == "IT") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Italy (Individual variables)")
+
+# 100% missing:  1 sd08new                     
+#   2 sd08new_esp                 
+#   3 gad1 - gad7 (GAD-7)                     
+#  10 pcptsd1 - pcptsd5 (PC-PTSD-5)                    
+#  15 loneliness                  
+#  16 ra56                        
+#  17 ra57                        
+#  18 ra58                        
+#  19 ra59                        
+#  20 tr17                        
+#  21 mp18aa                      
+#  22 mp18ab                      
+#  23 mp25d_2and3                 
+#  24 mp25ea                      
+#  25 mp25fb                  
+
+vis_miss(ds_w1 |> filter(country_of_residence == "IT") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Italy (Ecological variables)")
+
+# 100% missing: 1 NUTS3      
+ # 2 metro_area             
+ # 3 census_fips_code       
+ # 4 jurisdiction           
+ # 5 c5m_flag               
+ # 6 h7_flag                
+ # 7 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary        
+ # 8 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary         9 v2d_medically_clinically_vulnerable_non_elderly                            10 v2e_education                                                             11 v2f_frontline_workers_non_healthcare                                      12 v2g_frontline_workers_healthcare                                          13 v4_mandatory_vaccination_summary                                          14 majority_vaccinated                                                   
+ 
+# Italy does not have data for 2nd and 3rd waves.
+
+# Netherlands
+
+vis_miss(ds_w1 |> filter(country_of_residence == "NL") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Netherlands (Individual variables)")
+
+# 100% Missing: 1 sd08                        
+ #  2 sd08a                       
+ #  3 sd08new                     
+ #  4 sd08new_esp                 
+ #  5 gad1 - gad7 (GAD-7)                        
+ # 12 pcptsd1 - pcptsd5 (PC-PTSD-5)                
+ # 17 loneliness                  
+ # 18 ra56                        
+ # 19 ra57                        
+ # 20 ra58                        
+ # 21 ra59                        
+ # 22 mp18aa                      
+ # 23 mp25d_2and3                 
+ # 24 mp25ea                      
+ # 25 mp25fb                      
+
+vis_miss(ds_w1 |> filter(country_of_residence == "NL") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Netherlands (Ecological variables)")
+
+# 100 missing: 
+#  1 nuts_id   
+#  2 NUTS1
+#  3 nuts_remoteness_category
+#  4 nuts_remoteness_label
+#  5 country_region_code
+#  6 country_region
+#  7 metro_area
+#  8 iso_3166_2_code
+#  9 census_fips_code
+# 10 place_id
+# 11 jurisdiction 
+# 12 h7_flag        
+# 13 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary        
+# 14 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary
+# 15 v2d_medically_clinically_vulnerable_non_elderly
+# 16 v2e_education
+# 17 v2f_frontline_workers_non_healthcare
+# 18 v2g_frontline_workers_healthcare
+# 19 v4_mandatory_vaccination_summary
+# 20 containment_health_index_average_for_display
+
+vis_miss(ds_w2 |> filter(country_of_residence == "NL") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 2): Netherlands (Individual variables)")
+
+# # 100% missing:1 sd09                       
+#   2 sd09a                      
+#   3 sd10                       
+#   4 sd10a                      
+#   5 gad1 - gad7 (GAD-7)                       
+#  12 tea48                      
+#  13 tea49                      
+#  14 ep31                       
+#  15 mp25d                     
+
+vis_miss(ds_w2 |> filter(country_of_residence == "NL") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 2): Netherlands (Ecological variables)")
+
+# 100% missing:  1 nuts_id                                                                             
+#  2 NUTS1                                                                               
+#  3 nuts_remoteness_category                                                            
+#  4 nuts_remoteness_label                                                               
+#  5 country_region_code                                                                 
+#  6 country_region                                                                      
+#  7 metro_area                                                                          
+#  8 iso_3166_2_code                                                                     
+#  9 census_fips_code                                                                    
+# 10 place_id                                                                            
+# 11 jurisdiction                                                                        
+# 12 v4_mandatory_vaccination_summary                                                    
+# 13 containment_health_index_average_for_display                            
+
+vis_miss(ds_w3 |> filter(country_of_residence == "NL") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 3): Netherlands (Individual variables)")
+
+# 100% missing:   1 profession_hcw              
+ #  2 tr14                        
+ #  3 sd04                        
+ #  4 living_alone                
+ #  5 sd07                        
+ #  6 sd09                        
+ #  7 sd09a                       
+ #  8 sd10                        
+ #  9 sd10a                       
+ # 10 re57                        
+ # 11 re58                        
+ # 12 re59                        
+ # 13 re60                        
+ # 14 re62                        
+ # 15 re63                        
+ # 16 tea48                       
+ # 17 tea49                       
+ # 18 re56                        
+ # 19 re56a                       
+ # 20 ep31                        
+ # 21 mp25d                    
+
+vis_miss(ds_w3 |> filter(country_of_residence == "NL") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 3): Netherlands (Ecological variables)")
+
+# 100% missing: 1 nuts_id                                                                              
+#  2 NUTS1                                                                                
+#  3 nuts_remoteness_category                                                             
+#  4 nuts_remoteness_label                                                                
+#  5 country_region_code                                                                  
+#  6 country_region                                                                       
+#  7 metro_area                                                                           
+#  8 iso_3166_2_code                                                                      
+#  9 census_fips_code                                                                     
+# 10 place_id                                                                             
+# 11 jurisdiction                                                                         
+# 12 containment_health_index_average_for_display
+
+# Spain
+
+vis_miss(ds_w1 |> filter(country_of_residence == "ES") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Spain (Individual variables)")
+
+# 100% missing:  1 sd08new                     
+ #  2 sd08new_esp                 
+ #  3 gad1 - gad7 (GAD-7)                       
+ # 10 pcptsd1 . pcptsd5 (PC-PTSD-5)                     
+ # 15 loneliness                  
+ # 16 ra56                        
+ # 17 ra57                        
+ # 18 ra58                        
+ # 19 ra59                        
+ # 20 mp18aa                      
+ # 21 mp18ab                      
+ # 22 mp25d_2and3                 
+ # 23 mp25ea                      
+ # 24 mp25fb                  
+
+vis_miss(ds_w1 |> filter(country_of_residence == "ES") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 1): Spain (Ecological variables)")
+
+# 100% missing:  1 metro_area                                                                          
+ # 2 census_fips_code                                                                    
+ # 3 jurisdiction                                                                        
+ # 4 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary       
+ # 5 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary                  
+ # 6 v4_mandatory_vaccination_summary                                                    
+ # 7 majority_vaccinated                                                                 
+
+vis_miss(ds_w2 |> filter(country_of_residence == "ES") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 2): Spain (Individual variables)")
+
+# 100% missing: 1 sd08                        
+ #  2 sd08a                       
+ #  3 sd09                        
+ #  4 sd09a                       
+ #  5 sd10                        
+ #  6 sd10a                       
+ #  7 gad1 - gad-7 (GAD-7)                      
+ # 14 tea48                       
+ # 15 tea49                       
+ # 16 ep31                        
+ # 17 mp25d                     
+
+vis_miss(ds_w2 |> filter(country_of_residence == "ES") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 2): Spain (Ecological variables)")
+
+# 100% missing:  1 metro_area                                                                          
+ # 2 census_fips_code                                                                    
+ # 3 jurisdiction                                                                        
+ # 4 c5m_flag                                                                            
+ # 5 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary       
+ # 6 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary                  
+ # 7 v4_mandatory_vaccination_summary                                                    
+ # 8 majority_vaccinated
+
+vis_miss(ds_w3 |> filter(country_of_residence == "ES") |> select(1:103)) +
+  ggplot2::labs(title = "Missing data (Wave 3): Spain (Individual variables)")
+
+# 100% missing:   1 sd03                        
+ #  2 age                         
+ #  3 sd04                        
+ #  4 sd08                        
+ #  5 sd08a                       
+ #  6 sd09                        
+ #  7 sd09a                       
+ #  8 sd10                        
+ #  9 sd10a                       
+ # 10 tea47 - tea49 (Trauma)                   
+ # 13 ra50                        
+ # 14 ra58                        
+ # 15 re56                        
+ # 16 re56a                       
+ # 17 ep31                        
+ # 18 mp25d                    
+
+vis_miss(ds_w3 |> filter(country_of_residence == "ES") |> select(104:182)) +
+  ggplot2::labs(title = "Missing data (Wave 3): Spain (Ecological variables)")
+
+# 100% missing: 1 metro_area                                                                          
+#  2 census_fips_code                                                                    
+#  3 jurisdiction                                                                        
+#  4 c5m_flag                                                                            
+#  5 c6m_flag                                                                            
+#  6 c7m_flag                                                                            
+#  7 e3_fiscal_measures                                                                  
+#  8 e4_international_support                                                            
+#  9 h4_emergency_investment_in_healthcare                                               
+# 10 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary       
+# 11 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary                  
+# 12 majority_vaccinated                                                               
+
+# Per wave, all countries.
+
+# Wave 1
+ds_w1 |> 
+    miss_var_summary() |> 
+    print(n = 183)
+
+# 100% missing:  1 sd08new            
+ #  2 sd08new_esp    
+ #  3 gad1 - gad-7 (GAD-7) 
+ # 10 pcptsd1 - pcptsd (PC-PTSD-5)
+ # 15 loneliness    
+ # 16 ra56    
+ # 17 ra57    
+ # 18 ra58    
+ # 19 ra59  
+ # 20 mp18aa
+ # 21 mp25d_2and3  
+ # 22 mp25ea  
+ # 23 mp25fb
+ # 24 metro_area
+ # 25 census_fips_code
+ # 26 jurisdiction
+ # 27 v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary        
+ # 28 v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary  
+ # 29 v4_mandatory_vaccination_summary    
+
+# Wave 2
+
+ds_w2 |> 
+    filter(country_of_residence != "IT") |>  # Take out Italy
+    miss_var_summary() |> 
+    print(n = 183)
+
+# 100% missing:   1 sd09
+# 2 sd09a
+#  3 sd10
+#  4 sd10a
+#  5 gad1 - gad7 (GAD-7)
+# 12 tea48
+# 13 tea49
+# 14 ep31
+# 15 metro_area
+# 16 census_fips_code
+# 17 jurisdiction
+# 18 v4_mandatory_vaccination_summary                 
+
+# Wave 3
+
+ds_w3 |> 
+    filter(country_of_residence != "IT") |>  # Take out Italy
+    miss_var_summary() |> 
+    print(n = 183)
+
+# # 100% Missing:   1 sd09                  
+#   2 sd09a   
+#   3 sd10  
+#   4 sd10a  
+#   5 tea48  
+#   6 tea49   
+#   7 re56  
+#   8 re56a   
+#   9 ep31
+#  10 metro_area
+#  11 census_fips_code
+#  12 jurisdiction                                                        
+```
+
+Those variables with 100% missing data need to be deleted.
+
+```{r delete var with 100% missing}
+ds |> 
+  miss_var_summary() |> 
+  print(n = 182)
+
+# Only 3 variables (All ecological) with 100% missing data.
+# TODO: Check maximum allowed % of missing values.
+
+ds <- 
+  ds |> 
+  select(-c(metro_area, census_fips_code, jurisdiction))
+```
+
+Seeing the proportion of missing data and number of responses per wave and
+country.
+
+```{r missing and n count}
+ds <- 
+  ds |> 
+  mutate(na_count = rowSums(is.na(ds)),
+         na_perc = 
+           rowSums(is.na(ds)) / 
+           (rowSums(is.na(ds)) + rowSums(!is.na(ds)))*100,
+         na_quartile = case_when(  
+           na_perc < 25 ~ "q1",
+           na_perc >= 25 & na_perc < 50 ~ "q2",
+           na_perc >= 50 & na_perc < 75 ~ "q3",
+           na_perc >= 75 ~ "q4"),
+         na_q_country = case_when(
+           na_quartile == "q1" & country_of_residence == "CZ" ~ "q1_na_CZ",
+           na_quartile == "q2" & country_of_residence == "CZ" ~ "q2_na_CZ",
+           na_quartile == "q1" & country_of_residence == "IT" ~ "q1_na_IT",
+           na_quartile == "q2" & country_of_residence == "IT" ~ "q2_na_IT",
+           na_quartile == "q1" & country_of_residence == "NL" ~ "q1_na_NL",
+           na_quartile == "q2" & country_of_residence == "NL" ~ "q2_na_NL",
+           na_quartile == "q1" & country_of_residence == "ES" ~ "q1_na_ES",
+           na_quartile == "q2" & country_of_residence == "ES" ~ "q2_na_ES",
+         )
+       )
+
+ds |> 
+  select(wave,
+         na_quartile,
+         country_of_residence,
+         na_q_country) |> 
+  tbl_summary(by = wave)
+```
+
+For a questionnaire to be valid, we should look out its completion.
+
+```{r questionnaire completion}
+ds <- 
+  ds |> 
+  mutate(
+    ghq_comp = case_when(
+      if_all(ad34:ad45, ~ !is.na(.)) ~ "Complete GHQ",
+      TRUE ~ "Incomplete GHQ"),
+    gad_comp = case_when(
+      if_all(gad1:gad7, ~ !is.na(.)) ~ "Complete GAD-7",
+      TRUE ~ "Incomplete GAD-7"),
+    pcptsd5_comp = case_when(
+      if_all(pcptsd1:pcptsd5, ~ !is.na(.)) ~ "Complete PC-PTSD-5",
+      TRUE ~ "Incomplete PC-PTSD-5"),
+    phq_comp = case_when(
+      if_all(phq68:phq76, ~ !is.na(.)) ~ "Complete PHQ-9",
+      TRUE ~ "Incomplete PHQ-9"),
+    brs_comp = case_when(
+      if_all(re57:re63, ~ !is.na(.)) ~ "Complete BRS",
+      TRUE ~ "Incomplete BRS"),
+    trauma_comp = case_when(
+      if_all(tea47:tea49, ~ !is.na(.)) ~ "Complete Trauma questions",
+      TRUE ~ "Incomplete trauma questions"))
+
+ds |> 
+  select(wave,
+         ghq_comp,
+         gad_comp,
+         pcptsd5_comp,
+         phq_comp,
+         brs_comp,
+         trauma_comp,
+         country_of_residence) |> 
+  tbl_summary(by = country_of_residence)
 ```
