@@ -67,6 +67,8 @@ Unfortunately, Italy has no data for this variable, while it does have it for
 the previously deleted mp25d, making it difficult for analysis.
 
 ```{r recoding mp25d_2and3 for spain}
+table(ds$mp25d_2and3, ds$country_of_residence) # To check this issue.
+
 ds <- 
   ds |>
   mutate(mp25d_2and3 = as.numeric(as.character(mp25d_2and3))) |> # To number
@@ -92,6 +94,8 @@ countries (Except IT, who doesn't have responses of this) already recoded this
 way.
 
 ```{r recode level 6 ra56 as NA for Spain}
+table(ds$ra56, ds$country_of_residence)
+
 ds <- 
   ds |>
     mutate(ra56 = as.numeric(as.character(ra56))) |> # To number value. 
@@ -99,6 +103,8 @@ ds <-
     ra56 == 6 & country_of_residence == "ES" ~ NA,
     TRUE ~ ra56)) |> 
   mutate(ra56 = factor(ra56)) # To factor again
+
+table(ds$ra56, ds$country_of_residence)
 ```
 
 We want to look at missing data trends, by wave and country
