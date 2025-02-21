@@ -99,13 +99,49 @@ ds <-
     gad_cat = as.ordered(gad_cat)
   )
 
-rm(gad_co_12, gad_co_st, phq_co_st)
+rm(gad_co_12, gad_co_st, phq_co_st, phq_co_12)
+```
+
+## Questionnaire completion
+
+```{r questionnaire completion}
+ds <- 
+  ds |> 
+  mutate(
+    ghq_comp = case_when(
+      if_all(ad34:ad45, ~ !is.na(.)) ~ "Complete GHQ",
+      TRUE ~ "Incomplete GHQ"),
+    gad_comp = case_when(
+      if_all(gad1:gad7, ~ !is.na(.)) ~ "Complete GAD-7",
+      TRUE ~ "Incomplete GAD-7"),
+    pcptsd5_comp = case_when(
+      if_all(pcptsd1:pcptsd5, ~ !is.na(.)) ~ "Complete PC-PTSD-5",
+      TRUE ~ "Incomplete PC-PTSD-5"),
+    phq_comp = case_when(
+      if_all(phq68:phq76, ~ !is.na(.)) ~ "Complete PHQ-9",
+      TRUE ~ "Incomplete PHQ-9"),
+    brs_comp = case_when(
+      if_all(re57:re63, ~ !is.na(.)) ~ "Complete BRS",
+      TRUE ~ "Incomplete BRS"),
+    trauma_comp = case_when(
+      if_all(tea47:tea49, ~ !is.na(.)) ~ "Complete Trauma questions",
+      TRUE ~ "Incomplete trauma questions"))
+
+ds |> 
+  select(wave,
+         ghq_comp,
+         gad_comp,
+         pcptsd5_comp,
+         phq_comp,
+         brs_comp,
+         trauma_comp,
+         country_of_residence) |> 
+  tbl_summary(by = country_of_residence)
 ```
 
 ### Healthcare worker density per 10,000 people.
 
 ```{r hcw density}
-
 density_prof <- 
   readxl::read_xlsx("ext/hcw_per_10k.xlsx") |>   # Data 
   select(country, nurses_20, doctors_20) |> 
@@ -126,4 +162,43 @@ ds <-
   ds |>
   mutate(nur_density_2020 = nurses_20,
          doc_density_2020 = doctors_20)
+
+rm(density_prof)
+```
+
+```{r filter ids by participation in waves}
+ds_1_2 <- 
+  ds |> 
+  filter(wave %in% c(1, 2)) |>  # Maintains waves of interest
+  group_by(hashed_id) |> 
+  filter(n_distinct(wave) == 2) |>  # Ensures id is in exactly those 2 waves.
+  ungroup()
+
+table(ds_1_2$wave, ds_1_2$country_of_residence) # Check
+
+ds_1_3 <- 
+  ds |> 
+  filter(wave %in% c(1, 3)) |> 
+  group_by(hashed_id) |> 
+  filter(n_distinct(wave) == 2) |> 
+  ungroup()
+
+table(ds_1_3$wave, ds_1_3$country_of_residence)
+
+ds_2_3 <- 
+  ds |> 
+  filter(wave %in% c(2, 3)) |> 
+  group_by(hashed_id) |> 
+  filter(n_distinct(wave) == 2) |> 
+  ungroup()
+
+table(ds_2_3$wave, ds_2_3$country_of_residence)
+
+ds_all_waves <- 
+  ds |> 
+  group_by(hashed_id) |> 
+  filter(n() == 3) |> 
+  ungroup()
+
+table(ds_all_waves$wave, ds_all_waves$country_of_residence)
 ```
