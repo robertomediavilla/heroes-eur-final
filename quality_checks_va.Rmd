@@ -602,39 +602,11 @@ ds |>
   tbl_summary(by = wave)
 ```
 
-For a questionnaire to be valid, we should look out its completion.
+Finally, generate a file for further use.
 
-```{r questionnaire completion}
-ds <- 
-  ds |> 
-  mutate(
-    ghq_comp = case_when(
-      if_all(ad34:ad45, ~ !is.na(.)) ~ "Complete GHQ",
-      TRUE ~ "Incomplete GHQ"),
-    gad_comp = case_when(
-      if_all(gad1:gad7, ~ !is.na(.)) ~ "Complete GAD-7",
-      TRUE ~ "Incomplete GAD-7"),
-    pcptsd5_comp = case_when(
-      if_all(pcptsd1:pcptsd5, ~ !is.na(.)) ~ "Complete PC-PTSD-5",
-      TRUE ~ "Incomplete PC-PTSD-5"),
-    phq_comp = case_when(
-      if_all(phq68:phq76, ~ !is.na(.)) ~ "Complete PHQ-9",
-      TRUE ~ "Incomplete PHQ-9"),
-    brs_comp = case_when(
-      if_all(re57:re63, ~ !is.na(.)) ~ "Complete BRS",
-      TRUE ~ "Incomplete BRS"),
-    trauma_comp = case_when(
-      if_all(tea47:tea49, ~ !is.na(.)) ~ "Complete Trauma questions",
-      TRUE ~ "Incomplete trauma questions"))
+```{r generate file}
+write_csv(ds, "data/data_complete_clean.csv")
 
-ds |> 
-  select(wave,
-         ghq_comp,
-         gad_comp,
-         pcptsd5_comp,
-         phq_comp,
-         brs_comp,
-         trauma_comp,
-         country_of_residence) |> 
-  tbl_summary(by = country_of_residence)
+write_rds(ds, "data/data_complete_clean.rds")
 ```
+
