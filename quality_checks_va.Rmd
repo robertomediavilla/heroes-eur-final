@@ -42,6 +42,7 @@ library(skimr)
 library(kableExtra) #Saves tables made with kable
 library(patchwork) 
 library(scales)
+library(haven)
 ```
 
 We noticed that mp25d (First wave) had different response codifications for 0-3
@@ -608,5 +609,13 @@ Finally, generate a file for further use.
 write_csv(ds, "data/data_complete_clean.csv")
 
 write_rds(ds, "data/data_complete_clean.rds")
+
+# SPSS needs a shorter name for some variables
+ds <- 
+  ds |> 
+  rename(v2b_vacc_age_elig_avail_floor_gp_summary = v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary,
+         v2c_vacc_age_elig_avail_age_floor_atrisk_sum = v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary)
+
+write_sav(ds, "data/data_complete_clean.sav")
 ```
 
