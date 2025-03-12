@@ -258,21 +258,21 @@ vis_miss(ds_w3 |>
 # Wave 1
 ds_w1 |> 
     miss_var_summary() |> 
-    print(n = 183)
+    print(n = 172)
 
 # Wave 2
 
 ds_w2 |> 
     filter(country_of_residence != "IT") |>  # Take out Italy
     miss_var_summary() |> 
-    print(n = 183)
+    print(n = 172)
 
 # Wave 3
 
 ds_w3 |> 
     filter(country_of_residence != "IT") |>  # Take out Italy
     miss_var_summary() |> 
-    print(n = 183)
+    print(n = 172)
 ```
 
 Those variables with 100% missing data need to be deleted.
@@ -282,8 +282,6 @@ na_percentage <- colMeans(is.na(ds))
 na_threshold <- 1
 ds <- ds[, na_percentage <= na_threshold]
 dim(ds)
-
-# TODO: Check maximum allowed % of missing values.
 ```
 
 Seeing the proportion of missing data and number of responses per wave and
@@ -336,12 +334,5 @@ write_csv(ds, "data/data_complete_clean.csv")
 
 write_rds(ds, "data/data_complete_clean.rds")
 
-# SPSS needs a shorter name for some variables
-ds <- 
-  ds |> 
-  rename(v2b_vacc_age_elig_avail_floor_gp_summary = v2b_vaccine_age_eligibility_availability_age_floor_general_population_summary,
-         v2c_vacc_age_elig_avail_age_floor_atrisk_sum = v2c_vaccine_age_eligibility_availability_age_floor_at_risk_summary)
-
 write_sav(ds, "data/data_complete_clean.sav")
 ```
-
