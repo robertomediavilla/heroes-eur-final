@@ -110,7 +110,7 @@ table(ds$ra56, ds$country_of_residence)
 
 We want to look at missing data trends, by wave and country
 
-```{r missing data by wave}
+```{r missing data by wave, eval = FALSE}
 ds_w1 <- 
   ds |> 
   filter(wave == 1)
